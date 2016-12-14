@@ -1,0 +1,30 @@
+name: EazyDB
+version: 0.1.0
+
+authors:
+  - DanSnow <dododavid006@gmail.com>
+
+# description: |
+#   Short description of EazyDB
+
+# dependencies:
+#   pg:
+#     github: will/crystal-pg
+#     version: "~> 0.5"
+dependencies:
+  commander:
+    github: mrrooijen/commander
+    version: ~> 0.3.3
+  pathname:
+    github: arcage/crystal-pathname
+
+targets:
+  eazydb:
+    main: src/cli.cr
+    version: "= 0.4.2"
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr
+
+# license: MIT
