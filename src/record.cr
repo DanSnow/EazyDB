@@ -12,24 +12,22 @@ module EazyDB::Record
   class Record
     getter :filename
 
-    def self.initdb(path : String)
+    def self.initdb(path : String, schemas : Array({ type: Type, name: String }))
       header = FileHeader.new
       header.magic = MAGIC
       header.rec_magic = REC_MAGIC
-      header.meta_cols.size = 1u32
-      header.next_id = 1u32
-      col = MetaCol.new
-      col.type = Type::T_STR.value
-      col.name = "hello"
-      header.meta_cols.cols << col
-      rec_header = RecHeader.new
-      rec_header.id = 0u32
-      obj = RecordObject.new(header)
-      obj["hello"] = "world"
+      header.next_id = 0u32
+
+      header.meta_cols.size = schemas.size.to_u32
+      schemas.each do |schema|
+        col = MetaCol.new
+        col.type = schema[:type].value
+        col.name = schema[:name]
+        header.meta_cols.cols << col
+      end
+
       File.open("#{path}/rdbfile", "w") do |f|
         header.write(f)
-        rec_header.write(f)
-        f.write_bytes(obj)
       end
     end
 
@@ -37,6 +35,13 @@ module EazyDB::Record
       @filename = filename
       io = File.open(filename)
       check_header(io)
+    end
+
+    def create_record
+      RecordObject.new(@header)
+    end
+
+    def write_record(record_obj : RecordObject)
     end
 
     private def check_header(io : IO)

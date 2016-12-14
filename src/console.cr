@@ -11,11 +11,11 @@ module EazyDB
         when "exit", "quit"
           break
         when /^create/
-          m = line.match(/^create (?<path>\S+)/).not_nil!
+          m = line.match(/^create (?<arg>.+)/).not_nil!
           if m
-            path = m["path"]
+            arg = m["arg"]
             cmd = Commands::Create.new
-            cmd.run(path)
+            cmd.run(arg)
           else
             STDERR.puts "Syntax error"
           end
