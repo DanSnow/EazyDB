@@ -4,7 +4,8 @@ require "./commands/*"
 module EazyDB
   COMMANDS = {
     /^create (?<args>.*)/ => Commands::Create,
-    /^insert (?<args>.*)/ => Commands::Insert
+    /^insert (?<args>.*)/ => Commands::Insert,
+    /^info$/ => Commands::Info
   }
   class Console
     def run

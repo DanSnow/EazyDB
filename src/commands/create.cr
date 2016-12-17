@@ -1,11 +1,8 @@
 require "json"
 require "./command"
 require "../record"
-require "../record/type"
 
 module EazyDB::Commands
-  alias Type = ::EazyDB::Record::Type
-
   class Create < Command
     def execute(args : JSON::Any?)
       args = args.not_nil!

@@ -1,9 +1,13 @@
 require "json"
 require "../record"
 
+require "../record/type"
+
 module EazyDB::Commands
   class StopExecute < Exception
   end
+
+  alias Type = ::EazyDB::Record::Type
 
   abstract class Command
     @db : ::EazyDB::Record::Record?
