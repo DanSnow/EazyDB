@@ -1,3 +1,4 @@
+require "c/fcntl"
 require "./binary_parser"
 require "./record/*"
 
@@ -41,10 +42,10 @@ module EazyDB::Record
       with_record("w") do |io|
         id = header.next_id
         header.next_id += 1
-        write_header(io)
-        header = create_rec_header(id)
+        write_meta(io)
+        rec_header = create_rec_header(id, record_object.size)
         io.seek(0, IO::Seek::End)
-        header.write(io)
+        rec_header.write(io)
         record_object.write(io)
       end
     end
@@ -53,22 +54,34 @@ module EazyDB::Record
       RecordObject.new(@header.not_nil!)
     end
 
-    def create_rec_header(id)
+    def create_rec_header(id, size)
       rec_header = RecHeader.new
       rec_header.id = id
       rec_header.ctime = Time.now.epoch.to_u32
       rec_header.del = 0u8
+      rec_header.next = size.to_u32
       rec_header
     end
 
-    def write_header(io)
-      io.rewind
+    def write_meta(io)
+      io.seek(0, IO::Seek::Set)
       @header.not_nil!.write(io)
     end
 
     def with_record(flag = "r", &block)
-      File.open(record_path, flag) do |f|
-        yield f
+      if flag == "r"
+        File.open(record_path) do |f|
+          yield f
+        end
+      else
+        oflag = LibC::O_WRONLY | LibC::O_CLOEXEC
+        fd = LibC.open(record_path, oflag, File::DEFAULT_CREATE_MODE)
+        file = IO::FileDescriptor.new(fd, blocking: true)
+        begin
+          yield file
+        ensure
+          file.close
+        end
       end
     end
 

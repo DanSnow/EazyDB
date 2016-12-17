@@ -8,7 +8,7 @@ module EazyDB::Commands
       record_object = db.create_record
       record_object.from_json(arg)
       db.insert(record_object)
-      puts "Done insert #{arg}"
+      puts "Done insert #{arg}, record size: #{record_object.size}"
     end
   end
 end

@@ -86,6 +86,22 @@ module EazyDB::Record
       @value[key]
     end
 
+    def size
+      fullfill!
+
+      @keys.reduce(0) do |total, key|
+        case @type[key]
+        when Type::T_NUM
+          total + 8
+        when Type::T_STR
+          str = @value[key].as(String)
+          total + 4 + str.size
+        else
+          total
+        end
+      end
+    end
+
     def fullfill!
       unfilled = unfilled_keys
       raise "Col #{unfilled.inspect} missing" unless unfilled.empty?
