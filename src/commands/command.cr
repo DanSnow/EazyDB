@@ -11,11 +11,15 @@ module EazyDB::Commands
     def initialize(@db)
     end
 
-    abstract def execute(args : JSON::Any)
+    abstract def execute(args : JSON::Any?)
 
-    def run(line : String)
+    def run(line : String?)
       begin
-        execute(JSON.parse(line))
+        if line
+          execute(JSON.parse(line))
+        else
+          execute(nil)
+        end
       rescue StopExecute
         # Ignore
       end
@@ -27,7 +31,11 @@ module EazyDB::Commands
     end
 
     protected def db
-      @db.not_nil!
+      if @db
+        @db.not_nil!
+      else
+        fatal "No db select"
+      end
     end
   end
 

@@ -7,7 +7,8 @@ module EazyDB::Commands
   alias Type = ::EazyDB::Record::Type
 
   class Create < Command
-    def execute(args : JSON::Any)
+    def execute(args : JSON::Any?)
+      args = args.not_nil!
       path = args["path"].as_s
       dir = File.dirname(path)
       fatal "Path \"#{dir}\" not exist" unless File.exists?(dir)

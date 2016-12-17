@@ -9,13 +9,20 @@ module EazyDB
   class Console
     def run
       db = nil
+      db_name = nil
       loop do
-        line = Readline.readline("> ")
+        line = if db_name
+                 Readline.readline("(#{db_name})> ")
+               else
+                 Readline.readline("> ")
+               end
         break if line.nil?
         line = line.chomp
         break if line == "exit" || line == "quit"
         if line.starts_with?("use")
-          db = use(line)
+          _, path =  line.split(' ')
+          db_name = path
+          db = use(path)
           next
         end
 
@@ -23,7 +30,7 @@ module EazyDB
           m = regex.match line
           if m
             cmd = klass.new(db)
-            cmd.run(m["args"])
+            cmd.run(m["args"]?)
             break :found
           end
         end
@@ -32,8 +39,7 @@ module EazyDB
       end
     end
 
-    def use(line)
-      _, path =  line.split(' ')
+    def use(path)
       puts "Use #{path}"
       ::EazyDB::Record::Record.new(path)
     end
