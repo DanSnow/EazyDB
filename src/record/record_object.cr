@@ -1,3 +1,4 @@
+require "json"
 require "./type"
 require "./meta"
 require "../binary_parser"
@@ -20,8 +21,9 @@ module EazyDB::Record
 
     def initialize(@meta : FileHeader)
       @meta.meta_cols.cols.each do |col|
-        @keys << col.name
-        @type[col.name] = Type.from_value(col.type)
+        name = col.name
+        @keys << name
+        @type[name] = Type.from_value(col.type)
       end
     end
 
@@ -29,7 +31,19 @@ module EazyDB::Record
       io.write_bytes(self)
     end
 
+    def from_json(json : JSON::Any)
+      @keys.each do |key|
+        if json[key].as_i?
+          self[key] = json[key].as_i
+        elsif json[key].as_s?
+          self[key] = json[key].as_s
+        end
+      end
+    end
+
     def to_io(io : IO, format : IO::ByteFormat)
+      fullfill!
+
       @keys.each do |key|
         case @type[key]
         when Type::T_NUM
@@ -46,6 +60,16 @@ module EazyDB::Record
       end
     end
 
+    def []=(key : String, value : String | Int32)
+      raise "Key not found" unless @keys.includes? key
+      case @type[key]
+      when Type::T_STR
+        self[key] = value.as(String)
+      when Type::T_NUM
+        self[key] = value.as(Int32)
+      end
+    end
+
     def []=(key : String, value : String)
       raise "Key not found" unless @keys.includes? key
       raise "Type mis-match" unless @type[key] == Type::T_STR
@@ -53,13 +77,22 @@ module EazyDB::Record
     end
 
     def []=(key : String, value : Int32)
-      raise "Key not found" unless @keys.include? key
+      raise "Key not found" unless @keys.includes? key
       raise "Type mis-match" unless @type[key] == Type::T_NUM
       @value[key] = value
     end
 
     def [](key : String)
       @value[key]
+    end
+
+    def fullfill!
+      unfilled = unfilled_keys
+      raise "Col #{unfilled.inspect} missing" unless unfilled.empty?
+    end
+
+    def unfilled_keys
+      @keys.reject { |key| @value.has_key? key }
     end
   end
 end
