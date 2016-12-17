@@ -15,8 +15,6 @@ dependencies:
   commander:
     github: mrrooijen/commander
     version: ~> 0.3.3
-  pathname:
-    github: arcage/crystal-pathname
 
 targets:
   eazydb:
