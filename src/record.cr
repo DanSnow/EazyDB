@@ -42,13 +42,8 @@ module EazyDB::Record
       next_id = header.next_id
       raise "Index out of range" unless id < next_id
       with_record do |io|
-        io.read_bytes(FileHeader) # Jump header
-        rec_header = RecHeader.new
-        rec_header.load(io)
-        while rec_header.id != id && rec_header.del != 1
-          io.pos += rec_header.next
-          rec_header.load(io)
-        end
+        rec_header = seek_to_record(io, id)
+        break nil if rec_header.nil?
         rec_object = create_record
         rec_object.load(io)
       end
@@ -64,6 +59,38 @@ module EazyDB::Record
         rec_header.write(io)
         record_object.write(io)
       end
+    end
+
+    def delete(id : UInt32)
+      next_id = header.next_id
+      raise "Index out of range" unless id < next_id
+      with_record("w+") do |io|
+        rec_header = seek_to_header(io, id)
+        break false if rec_header.nil?
+        rec_header.del = 1u8
+        rec_header.write(io)
+        true
+      end
+    end
+
+    def seek_to_header(io : IO, id : UInt32)
+      rec_header = seek_to_record(io, id)
+      io.pos -= 13 if rec_header
+      rec_header
+    end
+
+    def seek_to_record(io : IO, id : UInt32)
+      io.pos = 0
+      io.read_bytes(FileHeader) # Jump header
+      rec_header = RecHeader.new
+      rec_header.load(io)
+      while rec_header.id != id || rec_header.del != 0
+        io.pos += rec_header.next
+        rec_header.load(io)
+      end
+      rec_header
+    rescue IO::EOFError
+      nil
     end
 
     def create_record
@@ -90,7 +117,12 @@ module EazyDB::Record
           yield f
         end
       else
-        oflag = LibC::O_WRONLY | LibC::O_CLOEXEC
+        mode = if flag == "w+"
+                 LibC::O_RDWR
+               else
+                 LibC::O_WRONLY
+               end
+        oflag = mode | LibC::O_CLOEXEC
         fd = LibC.open(record_path, oflag, File::DEFAULT_CREATE_MODE)
         file = IO::FileDescriptor.new(fd, blocking: true)
         begin
