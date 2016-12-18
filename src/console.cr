@@ -5,7 +5,8 @@ module EazyDB
   COMMANDS = {
     /^create (?<args>.*)/ => Commands::Create,
     /^insert (?<args>.*)/ => Commands::Insert,
-    /^info$/ => Commands::Info
+    /^info$/ => Commands::Info,
+    /^get (?<args>.*)/ => Commands::Get
   }
   class Console
     def run

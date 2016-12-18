@@ -6,7 +6,7 @@ require "../binary_parser"
 module EazyDB::Record
   class RecordString < ::BinaryParser
     uint32 :size
-    string :value
+    string :value, { count: :size }
   end
 
   class RecordNumber < ::BinaryParser
@@ -25,6 +25,26 @@ module EazyDB::Record
         @keys << name
         @type[name] = Type.from_value(col.type)
       end
+    end
+
+    def load(io : IO)
+      @keys.each do |key|
+        rec = case @type[key]
+              when Type::T_NUM
+                RecordNumber.new
+              when Type::T_STR
+                RecordString.new
+              else
+                raise "Type error"
+              end
+        rec.load(io)
+        if rec.is_a? RecordNumber
+          @value[key] = rec.value
+        elsif rec.is_a? RecordString
+          @value[key] = rec.value
+        end
+      end
+      self
     end
 
     def write(io : IO)

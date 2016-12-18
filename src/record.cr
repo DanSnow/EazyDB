@@ -38,6 +38,22 @@ module EazyDB::Record
       io.close
     end
 
+    def get(id : UInt32)
+      next_id = header.next_id
+      raise "Index out of range" unless id < next_id
+      with_record do |io|
+        io.read_bytes(FileHeader) # Jump header
+        rec_header = RecHeader.new
+        rec_header.load(io)
+        while rec_header.id != id && rec_header.del != 1
+          io.seek(io.pos + rec_header.next)
+          rec_header.load(io)
+        end
+        rec_object = create_record
+        rec_object.load(io)
+      end
+    end
+
     def insert(record_object : RecordObject)
       with_record("w") do |io|
         id = header.next_id
