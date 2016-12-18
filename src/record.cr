@@ -46,7 +46,7 @@ module EazyDB::Record
         rec_header = RecHeader.new
         rec_header.load(io)
         while rec_header.id != id && rec_header.del != 1
-          io.seek(io.pos + rec_header.next)
+          io.pos += rec_header.next
           rec_header.load(io)
         end
         rec_object = create_record
