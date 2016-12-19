@@ -7,11 +7,13 @@ module EazyDB::Record
   class MetaCol < BinaryParser
     uint8 :type
     string :name, { count: 32 }
+    include ByteSize
   end
 
   class MetaCols < BinaryParser
     uint32 :size
     array :cols, { type: MetaCol, count: :size }
+    include ByteSize
   end
 
   class FileHeader < BinaryParser
@@ -19,5 +21,6 @@ module EazyDB::Record
     type :meta_cols, MetaCols
     uint32 :next_id
     uint16 :rec_magic
+    include ByteSize
   end
 end

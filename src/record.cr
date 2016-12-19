@@ -95,8 +95,7 @@ module EazyDB::Record
     end
 
     def seek_to_record(io : IO, id : UInt32)
-      io.pos = 0
-      io.read_bytes(FileHeader) # Jump header
+      io.pos = header.bytesize
       rec_header = RecHeader.new
       rec_header.load(io)
       while rec_header.id != id || rec_header.del != 0
