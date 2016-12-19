@@ -6,6 +6,7 @@ module EazyDB
     /^create (?<args>.*)/ => Commands::Create,
     /^insert (?<args>.*)/ => Commands::Insert,
     /^get (?<args>.*)/ => Commands::Get,
+    /^update (?<args>.*)/ => Commands::Update,
     /^delete (?<args>.*)/ => Commands::Delete,
     /^info$/ => Commands::Info
   }

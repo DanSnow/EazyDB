@@ -39,8 +39,8 @@ module EazyDB::Record
     end
 
     def get(id : UInt32)
-      next_id = header.next_id
-      raise "Index out of range" unless id < next_id
+      check_id_range(id)
+
       with_record do |io|
         rec_header = seek_to_record(io, id)
         break nil if rec_header.nil?
@@ -51,26 +51,41 @@ module EazyDB::Record
 
     def insert(record_object : RecordObject)
       with_record("w") do |io|
-        id = header.next_id
-        header.next_id += 1
-        write_meta(io)
-        rec_header = create_rec_header(id, record_object.size)
-        io.seek(0, IO::Seek::End)
-        rec_header.write(io)
-        record_object.write(io)
+        id = increase_id(io)
+        append_record(io, id, record_object)
+      end
+    end
+
+    def update(id : UInt32, record_object : RecordObject)
+      check_id_range(id)
+
+      with_record("w+") do |io|
+        raise "Record not exist" unless mark_delete(io, id)
+        append_record(io, id, record_object)
       end
     end
 
     def delete(id : UInt32)
-      next_id = header.next_id
-      raise "Index out of range" unless id < next_id
+      check_id_range(id)
+
       with_record("w+") do |io|
-        rec_header = seek_to_header(io, id)
-        break false if rec_header.nil?
-        rec_header.del = 1u8
-        rec_header.write(io)
-        true
+        mark_delete(io, id)
       end
+    end
+
+    def append_record(io : IO, id : UInt32, record_object : RecordObject)
+      rec_header = create_rec_header(id, record_object.size)
+      io.seek(0, IO::Seek::End)
+      rec_header.write(io)
+      record_object.write(io)
+    end
+
+    def mark_delete(io : IO, id : UInt32)
+      rec_header = seek_to_header(io, id)
+      return false if rec_header.nil?
+      rec_header.del = 1u8
+      rec_header.write(io)
+      true
     end
 
     def seek_to_header(io : IO, id : UInt32)
@@ -91,6 +106,13 @@ module EazyDB::Record
       rec_header
     rescue IO::EOFError
       nil
+    end
+
+    def increase_id(io : IO)
+      id = header.next_id
+      header.next_id += 1
+      write_meta(io)
+      id
     end
 
     def create_record
@@ -142,6 +164,11 @@ module EazyDB::Record
 
     def header
       @header.not_nil!
+    end
+
+    private def check_id_range(id)
+      next_id = header.next_id
+      raise "Index out of range" unless id < next_id
     end
 
     private def record_path
