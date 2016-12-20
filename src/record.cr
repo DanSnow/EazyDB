@@ -82,6 +82,13 @@ module EazyDB::Record
       end
     end
 
+    def reindex
+      with_record do |io|
+        each_record(io, true) do |header|
+        end
+      end
+    end
+
     def append_record(io : IO, id : UInt32, record_object : RecordObject)
       rec_header = create_rec_header(id, record_object.size)
       io.seek(0, IO::Seek::End)
@@ -160,19 +167,18 @@ module EazyDB::Record
     end
 
     def with_record(flag = "r", &block)
+      with_file(record_path, flag) do |f|
+        yield f
+      end
+    end
+
+    def with_file(filepath, flag)
       if flag == "r"
-        File.open(record_path) do |f|
+        File.open(filepath) do |f|
           yield f
         end
       else
-        mode = if flag == "w+"
-                 LibC::O_RDWR
-               else
-                 LibC::O_WRONLY
-               end
-        oflag = mode | LibC::O_CLOEXEC
-        fd = LibC.open(record_path, oflag, File::DEFAULT_CREATE_MODE)
-        file = IO::FileDescriptor.new(fd, blocking: true)
+        file = open_file(filepath, flag)
         begin
           yield file
         ensure
@@ -181,11 +187,19 @@ module EazyDB::Record
       end
     end
 
-    def open_record
-      File.open(record_path)
+    def open_file(filepath, flag)
+      mode = if flag == "w+"
+               LibC::O_RDWR
+             else
+               LibC::O_WRONLY
+             end
+      oflag = mode | LibC::O_CLOEXEC | LibC::O_CREAT
+      fd = LibC.open(filepath, oflag, File::DEFAULT_CREATE_MODE)
+      file = IO::FileDescriptor.new(fd, blocking: true)
     end
 
-    def write_record(io : IO, record_obj : RecordObject)
+    def open_record
+      File.open(record_path)
     end
 
     def header
