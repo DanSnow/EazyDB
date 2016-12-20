@@ -36,8 +36,11 @@ module EazyDB
           m = regex.match line
           if m
             cmd = klass.new(db)
+            start = Time.now
             res = cmd.run(m["args"]?)
+            e = Time.now
             puts res.to_s
+            puts "Time: #{e - start}"
             break :found
           end
         end
