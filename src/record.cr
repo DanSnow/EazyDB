@@ -83,8 +83,23 @@ module EazyDB::Record
     end
 
     def reindex
-      with_record do |io|
-        each_record(io, true) do |header|
+      with_index("w") do |index_io|
+        idx_header = IndexHeader.new
+        idx_header.size = header.next_id
+        idx_header.write(index_io)
+        idx_rec = IndexRecord.new
+        idx_rec.offset = 0u32
+        idx_header.size.times do
+          idx_rec.write(index_io)
+        end
+        index_io.pos = 4
+
+        with_record do |rec_io|
+          each_record(rec_io, true) do |rec_header|
+            idx_rec.offset = rec_io.pos.to_u32
+            index_io.pos = rec_header.id * 4 + 4
+            idx_rec.write(index_io)
+          end
         end
       end
     end
@@ -172,6 +187,12 @@ module EazyDB::Record
       end
     end
 
+    def with_index(flag = "r")
+      with_file(index_path, flag) do |f|
+        yield f
+      end
+    end
+
     def with_file(filepath, flag)
       if flag == "r"
         File.open(filepath) do |f|
@@ -213,6 +234,10 @@ module EazyDB::Record
 
     private def record_path
       File.join(@db_path, "rdbfile")
+    end
+
+    private def index_path
+      File.join(@db_path, "rindex")
     end
 
     private def check_header(io : IO)
