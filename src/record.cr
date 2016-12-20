@@ -45,7 +45,8 @@ module EazyDB::Record
     def insert(record_object : RecordObject)
       with_record("w") do |io|
         id = increase_id(io)
-        append_record(io, id, record_object)
+        offset = append_record(io, id, record_object)
+        update_index(id, offset.to_u32)
       end
     end
 
@@ -54,7 +55,8 @@ module EazyDB::Record
 
       with_record("w+") do |io|
         raise "Record not exist" unless mark_delete(io, id)
-        append_record(io, id, record_object)
+        offset = append_record(io, id, record_object)
+        update_index(id, offset.to_u32)
       end
     end
 
@@ -63,6 +65,7 @@ module EazyDB::Record
 
       with_record("w+") do |io|
         mark_delete(io, id)
+        update_index(id, 0u32)
       end
     end
 
@@ -90,18 +93,81 @@ module EazyDB::Record
         with_record do |rec_io|
           each_record(rec_io, true) do |rec_header|
             idx_rec.offset = rec_io.pos.to_u32
-            index_io.pos = rec_header.id * 4 + 4
+            index_io.pos = index_offset(rec_header.id)
             idx_rec.write(index_io)
           end
         end
       end
     end
 
+    def seek_to_record(io : IO, id : UInt32)
+      if index?
+        seek_with_index(io, id)
+      else
+        seek_linear(io, id)
+      end
+    end
+
+    def seek_with_index(io : IO, id : UInt32)
+      offset = find_offset(id)
+      return nil unless offset
+      return nil if offset == 0
+      io.pos = offset
+      RecHeader.new.load(io)
+    end
+
+    def find_offset(id : UInt32)
+      return nil unless index?
+      check_id_range(id)
+
+      with_index do |io|
+        io.pos = index_offset(id)
+        idx = IndexRecord.new.load(io)
+        idx.offset
+      end
+    end
+
+    def update_index(id : UInt32, offset : UInt32)
+      return reindex unless index?
+
+      with_index("w+") do |io|
+        io.pos = 0
+        idx_header = IndexHeader.new.load(io)
+        extend_index(io, header.next_id - idx_header.size) if idx_header.size < header.next_id
+        io.pos = index_offset(id)
+        idx = IndexRecord.new
+        idx.offset = offset
+        idx.write(io)
+      end
+    end
+
+    def extend_index(io : IO, size : UInt32)
+      io.seek(0, IO::Seek::End)
+      fill_index(io, size)
+    end
+
+    def fill_index(io : IO, size : UInt32)
+      idx = IndexRecord.new
+      size.times do
+        idx.write(io)
+      end
+    end
+
+    def index?
+      File.exists?(index_path)
+    end
+
+    def index_offset(id : UInt32)
+      id * 4 + 4
+    end
+
     def append_record(io : IO, id : UInt32, record_object : RecordObject)
       rec_header = create_rec_header(id, record_object.size)
       io.seek(0, IO::Seek::End)
+      offset = io.pos
       rec_header.write(io)
       record_object.write(io)
+      offset
     end
 
     def mark_delete(io : IO, id : UInt32)
@@ -136,7 +202,7 @@ module EazyDB::Record
       rec_header
     end
 
-    def seek_to_record(io : IO, id : UInt32)
+    def seek_linear(io : IO, id : UInt32)
       io.pos = header.bytesize
       rec_header = RecHeader.new
       rec_header.load(io)
