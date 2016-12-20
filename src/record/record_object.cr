@@ -131,4 +131,10 @@ module EazyDB::Record
       @keys.reject { |key| @value.has_key? key }
     end
   end
+
+  class Record
+    def create_record
+      RecordObject.new(header)
+    end
+  end
 end

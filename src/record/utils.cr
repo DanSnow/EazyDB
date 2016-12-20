@@ -1,3 +1,5 @@
+require "c/fcntl"
+
 module EazyDB::Record
   class Record
     def open_file(filepath, flag)

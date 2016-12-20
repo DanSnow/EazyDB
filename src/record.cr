@@ -1,4 +1,3 @@
-require "c/fcntl"
 require "./binary_parser"
 require "./record/*"
 
@@ -100,67 +99,6 @@ module EazyDB::Record
       end
     end
 
-    def seek_to_record(io : IO, id : UInt32)
-      if index?
-        seek_with_index(io, id)
-      else
-        seek_linear(io, id)
-      end
-    end
-
-    def seek_with_index(io : IO, id : UInt32)
-      offset = find_offset(id)
-      return nil unless offset
-      return nil if offset == 0
-      io.pos = offset
-      RecHeader.new.load(io)
-    end
-
-    def find_offset(id : UInt32)
-      return nil unless index?
-      check_id_range(id)
-
-      with_index do |io|
-        io.pos = index_offset(id)
-        idx = IndexRecord.new.load(io)
-        idx.offset
-      end
-    end
-
-    def update_index(id : UInt32, offset : UInt32)
-      return reindex unless index?
-
-      with_index("w+") do |io|
-        io.pos = 0
-        idx_header = IndexHeader.new.load(io)
-        extend_index(io, header.next_id - idx_header.size) if idx_header.size < header.next_id
-        io.pos = index_offset(id)
-        idx = IndexRecord.new
-        idx.offset = offset
-        idx.write(io)
-      end
-    end
-
-    def extend_index(io : IO, size : UInt32)
-      io.seek(0, IO::Seek::End)
-      fill_index(io, size)
-    end
-
-    def fill_index(io : IO, size : UInt32)
-      idx = IndexRecord.new
-      size.times do
-        idx.write(io)
-      end
-    end
-
-    def index?
-      File.exists?(index_path)
-    end
-
-    def index_offset(id : UInt32)
-      id * 4 + 4
-    end
-
     def append_record(io : IO, id : UInt32, record_object : RecordObject)
       rec_header = create_rec_header(id, record_object.size)
       io.seek(0, IO::Seek::End)
@@ -192,101 +130,6 @@ module EazyDB::Record
       end
     rescue IO::EOFError
       nil
-    end
-
-
-    def seek_to_header(io : IO, id : UInt32)
-      rec_header = seek_to_record(io, id)
-      # RecHeader size = 13
-      io.pos -= 13 if rec_header
-      rec_header
-    end
-
-    def seek_linear(io : IO, id : UInt32)
-      io.pos = header.bytesize
-      rec_header = RecHeader.new
-      rec_header.load(io)
-      while rec_header.id != id || rec_header.del != 0
-        io.pos += rec_header.next
-        rec_header.load(io)
-      end
-      rec_header
-    rescue IO::EOFError
-      nil
-    end
-
-    def increase_id(io : IO)
-      id = header.next_id
-      header.next_id += 1
-      write_meta(io)
-      id
-    end
-
-    def create_record
-      RecordObject.new(@header.not_nil!)
-    end
-
-    def create_rec_header(id, size)
-      rec_header = RecHeader.new
-      rec_header.id = id
-      rec_header.ctime = Time.now.epoch.to_u32
-      rec_header.del = 0u8
-      rec_header.next = size.to_u32
-      rec_header
-    end
-
-    def write_meta(io)
-      io.seek(0, IO::Seek::Set)
-      @header.not_nil!.write(io)
-    end
-
-    def with_record(flag = "r", &block)
-      with_file(record_path, flag) do |f|
-        yield f
-      end
-    end
-
-    def with_index(flag = "r")
-      with_file(index_path, flag) do |f|
-        yield f
-      end
-    end
-
-    def with_file(filepath, flag)
-      if flag == "r"
-        File.open(filepath) do |f|
-          yield f
-        end
-      else
-        file = open_file(filepath, flag)
-        begin
-          yield file
-        ensure
-          file.close
-        end
-      end
-    end
-
-    def header
-      @header.not_nil!
-    end
-
-    private def check_id_range(id)
-      next_id = header.next_id
-      raise "Index out of range" unless id < next_id
-    end
-
-    private def record_path
-      File.join(@db_path, "rdbfile")
-    end
-
-    private def index_path
-      File.join(@db_path, "rindex")
-    end
-
-    private def check_header(io : IO)
-      @header = io.read_bytes(FileHeader).as(FileHeader)
-      raise "Magic mis-match" if MAGIC != @header.not_nil!.magic
     end
   end
 end
