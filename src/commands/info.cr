@@ -5,7 +5,7 @@ module EazyDB::Commands
   class InfoResponse < Response
     @schema = {} of String => Type
 
-    def initialize(@record_count : UInt32)
+    def initialize(@record_count : UInt32, @header_size : Int32)
     end
 
     def []=(key : String, type : Type)
@@ -13,6 +13,7 @@ module EazyDB::Commands
     end
 
     def to_s
+      puts "Header size: #{@header_size}"
       puts "Cols:"
       @schema.each do |key, type|
         case type
@@ -29,7 +30,7 @@ module EazyDB::Commands
 
   class Info < Command
     def execute(_arg : JSON::Any?)
-      res = InfoResponse.new(db.header.next_id)
+      res = InfoResponse.new(db.header.next_id, db.header.bytesize)
 
       db.header.meta_cols.cols.each do |col|
         type = Type.from_value(col.type)
