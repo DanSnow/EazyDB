@@ -3,13 +3,6 @@ require "./binary_parser"
 require "./record/*"
 
 module EazyDB::Record
-  class RecHeader < BinaryParser
-    uint32 :id
-    uint32 :ctime
-    uint8 :del
-    uint32 :next
-  end
-
   class Record
     getter :db_path
 
