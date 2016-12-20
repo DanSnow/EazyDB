@@ -26,9 +26,9 @@ module EazyDB::Record
     end
 
     def initialize(@db_path : String)
-      io = open_record
-      check_header(io)
-      io.close
+      with_record do |io|
+        check_header(io)
+      end
     end
 
     def get(id : UInt32)
@@ -210,10 +210,6 @@ module EazyDB::Record
       oflag = mode | LibC::O_CLOEXEC | LibC::O_CREAT
       fd = LibC.open(filepath, oflag, File::DEFAULT_CREATE_MODE)
       file = IO::FileDescriptor.new(fd, blocking: true)
-    end
-
-    def open_record
-      File.open(record_path)
     end
 
     def header
