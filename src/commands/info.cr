@@ -2,19 +2,41 @@ require "json"
 require "./command"
 
 module EazyDB::Commands
-  class Info < Command
-    def execute(_arg : JSON::Any?)
+  class InfoResponse < Response
+    @schema = {} of String => Type
+
+    def initialize(@record_count : UInt32)
+    end
+
+    def []=(key : String, type : Type)
+      @schema[key] = type
+    end
+
+    def to_s
       puts "Cols:"
-      db.header.meta_cols.cols.each do |col|
-        type = Type.from_value(col.type)
+      @schema.each do |key, type|
         case type
         when Type::T_STR
-          puts "#{col.name}: str"
+          puts "#{key}: str"
         when Type::T_NUM
-          puts "#{col.name}: num"
+          puts "#{key}: num"
         end
       end
-      puts "\nRecord count: #{db.header.next_id}"
+
+      puts "\nRecord count: #{@record_count}"
+    end
+  end
+
+  class Info < Command
+    def execute(_arg : JSON::Any?)
+      res = InfoResponse.new(db.header.next_id)
+
+      db.header.meta_cols.cols.each do |col|
+        type = Type.from_value(col.type)
+        res[col.name] = type
+      end
+
+      res
     end
   end
 end

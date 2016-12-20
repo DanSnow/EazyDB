@@ -10,6 +10,7 @@ module EazyDB::Commands
       rec_object = db.create_record
       rec_object.from_json(value)
       db.update(id, rec_object)
+      SuccessResponse.new("Success")
     end
   end
 end

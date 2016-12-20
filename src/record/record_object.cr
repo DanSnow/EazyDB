@@ -61,6 +61,14 @@ module EazyDB::Record
       end
     end
 
+    def to_json(io : IO)
+      io.json_object do |obj|
+        @keys.each do |key|
+          obj.field key, @value[key]
+        end
+      end
+    end
+
     def to_io(io : IO, format : IO::ByteFormat)
       fullfill!
 
@@ -129,6 +137,22 @@ module EazyDB::Record
 
     def unfilled_keys
       @keys.reject { |key| @value.has_key? key }
+    end
+
+    def each
+      fullfill!
+
+      @keys.each do |key|
+        yield key, @value[key]
+      end
+    end
+
+    def to_s
+      String.build do |io|
+        each do |key, value|
+          io.puts "#{key}: #{value}"
+        end
+      end
     end
   end
 

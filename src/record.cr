@@ -63,8 +63,9 @@ module EazyDB::Record
       check_id_range(id)
 
       with_record("w+") do |io|
-        mark_delete(io, id)
+        res = mark_delete(io, id)
         update_index(id, 0u32)
+        res
       end
     end
 

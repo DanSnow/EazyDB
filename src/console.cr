@@ -36,7 +36,8 @@ module EazyDB
           m = regex.match line
           if m
             cmd = klass.new(db)
-            cmd.run(m["args"]?)
+            res = cmd.run(m["args"]?)
+            puts res.to_s
             break :found
           end
         end

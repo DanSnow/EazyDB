@@ -4,10 +4,53 @@ require "../record"
 require "../record/type"
 
 module EazyDB::Commands
-  class StopExecute < Exception
+  class FatalError < Exception
   end
 
   alias Type = ::EazyDB::Record::Type
+  alias RecordObject = ::EazyDB::Record::RecordObject
+
+  abstract class Response
+    @error : Bool = false
+
+    abstract def to_s
+
+    def to_json
+      String.build do |io|
+        io.json_object do |obj|
+          obj.field "error", @error
+          obj.field "message", to_s
+        end
+      end
+    end
+
+    def error?
+      @error
+    end
+  end
+
+  class SuccessResponse < Response
+    def initialize(@msg : String)
+    end
+
+    def to_s
+      @msg
+    end
+  end
+
+  class ErrorResponse < Response
+    @error = true
+
+    def initialize(@msg : String)
+    end
+
+    def to_json
+    end
+
+    def to_s
+      @msg
+    end
+  end
 
   abstract class Command
     @db : ::EazyDB::Record::Record?
@@ -15,23 +58,23 @@ module EazyDB::Commands
     def initialize(@db)
     end
 
-    abstract def execute(args : JSON::Any?)
+    abstract def execute(args : JSON::Any?) : Response
 
     def run(line : String?)
-      begin
-        if line
-          execute(JSON.parse(line))
-        else
-          execute(nil)
-        end
-      rescue StopExecute
-        # Ignore
+      if line
+        execute(JSON.parse(line))
+      else
+        execute(nil)
       end
+    rescue err : FatalError
+      ErrorResponse.new(err.message || "")
+    rescue err : JSON::ParseException | KeyError
+      ErrorResponse.new("Argument error")
     end
 
     def fatal(msg : String)
       STDERR.puts msg
-      raise StopExecute.new
+      raise FatalError.new(msg)
     end
 
     protected def db
