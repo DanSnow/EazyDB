@@ -8,6 +8,7 @@ module EazyDB
     /^get (?<args>.*)/ => Commands::Get,
     /^update (?<args>.*)/ => Commands::Update,
     /^delete (?<args>.*)/ => Commands::Delete,
+    /^dump$/ => Commands::Dump,
     /^info$/ => Commands::Info
   }
   class Console

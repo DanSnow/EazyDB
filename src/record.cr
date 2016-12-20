@@ -73,6 +73,15 @@ module EazyDB::Record
       end
     end
 
+    def dump
+      with_record do |io|
+        rec_object = create_record
+        each_record(io) do |header|
+          yield header, rec_object.load(io)
+        end
+      end
+    end
+
     def append_record(io : IO, id : UInt32, record_object : RecordObject)
       rec_header = create_rec_header(id, record_object.size)
       io.seek(0, IO::Seek::End)
@@ -88,8 +97,26 @@ module EazyDB::Record
       true
     end
 
+    def each_record(io, seek_header = false)
+      io.pos = header.bytesize
+      rec_header = RecHeader.new
+      loop do
+        rec_header.load(io)
+        rec_pos = io.pos
+        if rec_header.del == 0
+          io.pos -= 13 if seek_header
+          yield rec_header
+        end
+        io.pos = rec_pos + rec_header.next
+      end
+    rescue IO::EOFError
+      nil
+    end
+
+
     def seek_to_header(io : IO, id : UInt32)
       rec_header = seek_to_record(io, id)
+      # RecHeader size = 13
       io.pos -= 13 if rec_header
       rec_header
     end
