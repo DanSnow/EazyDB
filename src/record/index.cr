@@ -30,7 +30,7 @@ module EazyDB::Record
     end
 
     def update_index(id : UInt32, offset : UInt32)
-      return reindex unless index?
+      reindex unless index?
 
       with_index("w+") do |io|
         io.pos = 0
