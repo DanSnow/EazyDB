@@ -10,6 +10,7 @@ module EazyDB
     /^delete (?<args>.*)/ => Commands::Delete,
     /^dump$/ => Commands::Dump,
     /^reindex$/ => Commands::Reindex,
+    /^purge$/ => Commands::Purge,
     /^info$/ => Commands::Info
   }
   class Console

@@ -78,6 +78,23 @@ module EazyDB::Record
       end
     end
 
+    def purge
+      new_record = "#{record_path}.new"
+      with_record do |io|
+        with_file(new_record, "w") do |new_io|
+          header.write(new_io)
+          rec_object = create_record
+          each_record(io) do |rec_header|
+            rec_header.write(new_io)
+            rec_object.load(io)
+            rec_object.write(new_io)
+          end
+        end
+      end
+      File.rename(new_record, record_path)
+      reindex
+    end
+
     def reindex
       with_index("w") do |index_io|
         idx_header = IndexHeader.new
