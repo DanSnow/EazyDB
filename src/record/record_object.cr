@@ -81,7 +81,7 @@ module EazyDB::Record
         when Type::T_STR
           rec = RecordString.new
           str = @value[key].as(String)
-          rec.size = str.size.to_u32
+          rec.size = str.bytesize.to_u32
           rec.value = str
           io.write_bytes(rec)
         end
