@@ -1,0 +1,20 @@
+{
+  "name": "node-eazydb",
+  "version": "1.0.0",
+  "description": "Node.js driver for EazyDB",
+  "main": "index.js",
+  "author": "DanSnow",
+  "license": "MIT",
+  "dependencies": {
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-runtime": "^6.20.0",
+    "execa": "^0.5.0",
+    "nodent-runtime": "^3.0.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.21.0",
+    "babel-preset-env": "^1.1.5",
+    "fast-async": "^6.2.0"
+  }
+}
