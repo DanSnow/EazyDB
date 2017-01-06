@@ -16,7 +16,3 @@ This is an eazy db which write in Crystal.
 - [commander](https://github.com/mrrooijen/commander)
 - [cyrstal-binary_parser](https://github.com/DanSnow/crystal-binary_parser)
 
-## Known Issue ##
-
-- Bug with long string
-
