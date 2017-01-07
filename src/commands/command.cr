@@ -15,12 +15,10 @@ module EazyDB::Commands
 
     abstract def to_s
 
-    def to_json
-      String.build do |io|
-        io.json_object do |obj|
-          obj.field "error", @error
-          obj.field "message", to_s
-        end
+    def to_json(json : JSON::Builder)
+      json.object do
+        json.field "error", @error
+        json.field "message", to_s
       end
     end
 
@@ -42,9 +40,6 @@ module EazyDB::Commands
     @error = true
 
     def initialize(@msg : String)
-    end
-
-    def to_json
     end
 
     def to_s

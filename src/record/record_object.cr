@@ -61,10 +61,10 @@ module EazyDB::Record
       end
     end
 
-    def to_json(io : IO)
-      io.json_object do |obj|
+    def to_json(json : JSON::Builder)
+      json.object do
         @keys.each do |key|
-          obj.field key, @value[key]
+          json.field key, @value[key]
         end
       end
     end

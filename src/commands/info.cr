@@ -13,18 +13,43 @@ module EazyDB::Commands
     end
 
     def to_s
-      puts "Header size: #{@header_size}"
-      puts "Cols:"
-      @schema.each do |key, type|
-        case type
-        when Type::T_STR
-          puts "#{key}: str"
-        when Type::T_NUM
-          puts "#{key}: num"
+      String.build do |io|
+        io.puts "Header size: #{@header_size}"
+        io.puts "Cols:"
+        @schema.each do |key, type|
+          case type
+          when Type::T_STR
+            io.puts "#{key}: str"
+          when Type::T_NUM
+            io.puts "#{key}: num"
+          end
+        end
+
+        io.puts "\nRecord count: #{@record_count}"
+      end
+    end
+
+    def to_json(json : JSON::Builder)
+      json.object do
+        json.field "error", false
+        json.field "header", @header_size
+        json.field "size", @record_count
+        json.field "schema" do
+          json.array do
+            json.object do
+              @schema.each do |key, type|
+                json.field "name", key
+                case type
+                when Type::T_STR
+                  json.field "type", "str"
+                when Type::T_NUM
+                  json.field "type", "num"
+                end
+              end
+            end
+          end
         end
       end
-
-      puts "\nRecord count: #{@record_count}"
     end
   end
 
