@@ -34,6 +34,7 @@ module EazyDB::Commands
         json.field "error", false
         json.field "header", @header_size
         json.field "size", @record_count
+        time_info(json)
         json.field "schema" do
           json.array do
             json.object do

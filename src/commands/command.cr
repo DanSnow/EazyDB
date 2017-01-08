@@ -12,6 +12,7 @@ module EazyDB::Commands
 
   abstract class Response
     @error : Bool = false
+    setter time : Time::Span?
 
     abstract def to_s
 
@@ -19,7 +20,12 @@ module EazyDB::Commands
       json.object do
         json.field "error", @error
         json.field "message", to_s
+        time_info(json)
       end
+    end
+
+    def time_info(json : JSON::Builder)
+      json.field "time", @time.not_nil!.to_s
     end
 
     def error?

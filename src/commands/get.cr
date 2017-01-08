@@ -14,9 +14,12 @@ module EazyDB::Commands
     end
 
     def to_json(json : JSON::Builder)
-      json.object do |obj|
-        obj.field "error", false
-        obj.field "data", @rec_object
+      json.object do
+        json.field "error", false
+        json.field "data" do
+          @rec_object.to_json(json)
+        end
+        time_info(json)
       end
     end
   end
