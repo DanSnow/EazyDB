@@ -22,7 +22,14 @@ module EazyDB::Commands
 
     def to_json(json : JSON::Builder)
       json.object do
-        json.field "error", true
+        json.field "error", false
+        json.field "data" do
+          json.array do
+            @ids.each do |id|
+              @rec[id].to_json(json)
+            end
+          end
+        end
         time_info(json)
       end
     end
