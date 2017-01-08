@@ -37,6 +37,8 @@ module EazyDB::Record
         rec_header = seek_to_record(io, id)
         break nil if rec_header.nil?
         rec_object = create_record
+        rec_object.id = rec_header.id
+        rec_object.ctime = rec_header.ctime
         rec_object.load(io)
       end
     end
@@ -71,9 +73,11 @@ module EazyDB::Record
 
     def dump
       with_record do |io|
-        rec_object = create_record
-        each_record(io) do |header|
-          yield header, rec_object.load(io)
+        each_record(io) do |rec_header|
+          rec_object = create_record
+          rec_object.id = rec_header.id
+          rec_object.ctime = rec_header.ctime
+          yield rec_header, rec_object.load(io)
         end
       end
     end

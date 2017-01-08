@@ -19,6 +19,9 @@ module EazyDB::Record
     @type = {} of String => Type
     @value = {} of String => (String | Int32)
 
+    setter id : UInt32?
+    setter ctime : UInt32?
+
     def initialize(@meta : FileHeader)
       @meta.meta_cols.cols.each do |col|
         name = col.name
@@ -63,6 +66,8 @@ module EazyDB::Record
 
     def to_json(json : JSON::Builder)
       json.object do
+        json.field "id", @id
+        json.field "_ctime", @ctime
         @keys.each do |key|
           json.field key, @value[key]
         end
