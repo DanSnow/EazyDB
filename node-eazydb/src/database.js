@@ -57,7 +57,7 @@ export class Database {
   use (database) {
     debug('Use %s', database)
     return this._push({
-      command: `use ${database}`,
+      command: `use ${database}`
     })
   }
 
@@ -164,7 +164,7 @@ export class Database {
     this._stdin.resume()
   }
 
-  _processResponse(response) {
+  _processResponse (response) {
     if (!this._pending) {
       throw Error('No pending command')
     }
