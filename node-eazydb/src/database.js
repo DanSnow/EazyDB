@@ -1,4 +1,5 @@
 import { Readable } from 'stream'
+import { inspect } from 'util'
 import Promise from 'bluebird'
 import readline from 'readline'
 import execa from 'execa'
@@ -78,6 +79,14 @@ export class Database {
       arg: {
         id
       }
+    })
+  }
+
+  insert (data) {
+    debug('Insert: %s', inspect(data))
+    return this._push({
+      command: 'insert',
+      arg: data
     })
   }
 
