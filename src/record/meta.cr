@@ -1,18 +1,18 @@
 require "../binary_parser"
 
 module EazyDB::Record
-  MAGIC = 0xA4D382CEu32
-  REC_MAGIC = 0xFEEEu16
+  MAGIC     = 0xA4D382CEu32
+  REC_MAGIC =     0xFEEEu16
 
   class MetaCol < BinaryParser
     uint8 :type
-    string :name, { count: 32 }
+    string :name, {count: 32}
     include ByteSize
   end
 
   class MetaCols < BinaryParser
     uint32 :size
-    array :cols, { type: MetaCol, count: :size }
+    array :cols, {type: MetaCol, count: :size}
     include ByteSize
   end
 

@@ -160,7 +160,7 @@ class BinaryParser
     @{{name.id}} = {{klass}}.new
 
     def _read_{{name.id}}(io : IO)
-      {% raise "Must inhert BinaryParser" if  BinaryParser < klass.resolve %}
+      {% raise "Must inhert BinaryParser" if BinaryParser < klass.resolve %}
       @{{name.id}} = io.read_bytes({{klass}}).as({{klass}})
     end
 
@@ -174,7 +174,7 @@ class BinaryParser
   end
 
   macro array(name, opt)
-    {% raise "Must have count and type" unless opt[:type] && opt[:count]  %}
+    {% raise "Must have count and type" unless opt[:type] && opt[:count] %}
     property! :{{name.id}}
     @{{name.id}} = [] of {{opt[:type]}}
 
@@ -211,7 +211,7 @@ class BinaryParser
     end
   end
 
-  macro string(name, opt = { count: -1 })
+  macro string(name, opt = {count: -1})
     property! :{{name.id}}
     @{{name.id}} = ""
 

@@ -6,7 +6,7 @@ require "../binary_parser"
 module EazyDB::Record
   class RecordString < ::BinaryParser
     uint32 :size
-    string :value, { count: :size }
+    string :value, {count: :size}
   end
 
   class RecordNumber < ::BinaryParser

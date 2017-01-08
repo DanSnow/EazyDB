@@ -5,17 +5,19 @@ module EazyDB
   COMMANDS = {
     /^create (?<args>.*)/ => Commands::Create,
     /^insert (?<args>.*)/ => Commands::Insert,
-    /^get (?<args>.*)/ => Commands::Get,
+    /^get (?<args>.*)/    => Commands::Get,
     /^update (?<args>.*)/ => Commands::Update,
     /^delete (?<args>.*)/ => Commands::Delete,
-    /^dump$/ => Commands::Dump,
-    /^reindex$/ => Commands::Reindex,
-    /^purge$/ => Commands::Purge,
-    /^info$/ => Commands::Info
+    /^dump$/              => Commands::Dump,
+    /^reindex$/           => Commands::Reindex,
+    /^purge$/             => Commands::Purge,
+    /^info$/              => Commands::Info,
   }
+
   class Console
     @db : Record::Record?
     @db_name : String?
+
     def initialize(@interactive = true)
     end
 
@@ -26,7 +28,7 @@ module EazyDB
         line = line.chomp
         break if line == "exit" || line == "quit"
         if line.starts_with?("use")
-          _, path =  line.split(' ')
+          _, path = line.split(' ')
           @db_name = path
           start = Time.now
           res = use(path)

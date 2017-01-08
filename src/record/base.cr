@@ -16,7 +16,6 @@ module EazyDB::Record
       raise "Index out of range" unless id < next_id
     end
 
-
     private def check_header(io : IO)
       @header = io.read_bytes(FileHeader).as(FileHeader)
       raise "Magic mis-match" if MAGIC != @header.not_nil!.magic

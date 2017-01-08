@@ -5,7 +5,7 @@ module EazyDB::Record
   class Record
     getter :db_path
 
-    def self.initdb(path : String, schemas : Array({ type: Type, name: String }))
+    def self.initdb(path : String, schemas : Array({type: Type, name: String}))
       header = FileHeader.new
       header.magic = MAGIC
       header.rec_magic = REC_MAGIC
@@ -155,4 +155,3 @@ module EazyDB::Record
     end
   end
 end
-

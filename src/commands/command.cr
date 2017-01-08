@@ -86,5 +86,4 @@ module EazyDB::Commands
       end
     end
   end
-
 end

@@ -34,4 +34,3 @@ cli = Commander::Command.new do |cmd|
 end
 
 Commander.run(cli, ARGV)
-

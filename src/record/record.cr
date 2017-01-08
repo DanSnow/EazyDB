@@ -19,4 +19,3 @@ module EazyDB::Record
     end
   end
 end
-

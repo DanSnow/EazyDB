@@ -28,9 +28,9 @@ module EazyDB::Commands
         name, type = schema_data.map(&.as_s)
         case type
         when "str"
-          { name: name, type: Type::T_STR }
+          {name: name, type: Type::T_STR}
         when "num"
-          { name: name, type: Type::T_NUM }
+          {name: name, type: Type::T_NUM}
         else
           fatal "Type error"
         end
