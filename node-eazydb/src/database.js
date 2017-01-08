@@ -45,8 +45,10 @@ export class Database {
       input: this._instance.stdout.pipe(debugStream('stdout: %s'))
     })
     this._stdout.on('line', (line) => {
-      debug('Get response')
-      this._processResponse(JSON.parse(line))
+      debug('Get response: (%s)', line)
+      if (line) {
+        this._processResponse(JSON.parse(line))
+      }
     })
     return this
   }
@@ -65,6 +67,16 @@ export class Database {
       arg: {
         path,
         schema
+      }
+    })
+  }
+
+  get (id) {
+    debug('Get %s', id)
+    return this._push({
+      command: 'get',
+      arg: {
+        id
       }
     })
   }
@@ -91,11 +103,11 @@ export class Database {
       return
     }
     if (this._queue.length) {
+      this._pending = true
       const { command, arg } = first(this._queue)
       debug('Queue not empty')
-      this._pending = true
       if (arg) {
-        this._send(`${command} ${JSON.stringify(arg)}`)
+        this._send(`${command} ${JSON.stringify(arg)}\n`)
       } else {
         this._send(`${command}\n`)
       }
@@ -112,7 +124,6 @@ export class Database {
     if (!this._pending) {
       throw Error('No pending command')
     }
-    console.dir(response)
     first(this._queue).defered.resolve(response)
     this._queue.splice(0)
     this._pending = false
