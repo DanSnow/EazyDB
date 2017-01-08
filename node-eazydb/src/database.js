@@ -118,6 +118,13 @@ export class Database {
     })
   }
 
+  dump () {
+    debug('Dump')
+    return this._push({
+      command: 'dump'
+    })
+  }
+
   close () {
     this._push({
       command: 'exit'
