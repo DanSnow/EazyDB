@@ -8,7 +8,8 @@
         "transform-regenerator",
         "transform-async-to-generator"
       ]
-    }]
+    }],
+    "stage-0"
   ],
   "plugins": [
     ["fast-async", {
