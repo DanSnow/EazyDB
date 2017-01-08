@@ -17,6 +17,8 @@ cli = Commander::Command.new do |cmd|
   cmd.run do |options, arguments|
     if options.bool["interactive"]
       EazyDB::Console.new.run
+    else
+      EazyDB::Console.new(false).run
     end
   end
 

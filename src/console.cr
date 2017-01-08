@@ -14,34 +14,35 @@ module EazyDB
     /^info$/ => Commands::Info
   }
   class Console
+    @db : Record::Record?
+    @db_name : String?
+    def initialize(@interactive = true)
+    end
+
     def run
-      db = nil
-      db_name = nil
       loop do
-        line = if db_name
-                 Readline.readline("(#{db_name})> ")
-               else
-                 Readline.readline("> ")
-               end
+        line = prompt
         break if line.nil?
         line = line.chomp
         break if line == "exit" || line == "quit"
         if line.starts_with?("use")
           _, path =  line.split(' ')
-          db_name = path
-          db = use(path)
+          @db_name = path
+          start = Time.now
+          res = use(path)
+          e = Time.now
+          report(res, e - start)
           next
         end
 
         found = COMMANDS.each do |regex, klass|
           m = regex.match line
           if m
-            cmd = klass.new(db)
+            cmd = klass.new(@db)
             start = Time.now
             res = cmd.run(m["args"]?)
             e = Time.now
-            puts res.to_s
-            puts "Time: #{e - start}"
+            report(res, e - start)
             break :found
           end
         end
@@ -50,9 +51,29 @@ module EazyDB
       end
     end
 
+    def report(res : Commands::Response, time : Time::Span)
+      if @interactive
+        puts res.to_s
+        puts "Time: #{time}"
+      else
+        res.time = time
+        puts res.to_json
+      end
+    end
+
+    def prompt
+      return gets unless @interactive
+
+      if @db_name
+        Readline.readline("(#{@db_name})> ")
+      else
+        Readline.readline("> ")
+      end
+    end
+
     def use(path)
-      puts "Use #{path}"
-      ::EazyDB::Record::Record.new(path)
+      @db = ::EazyDB::Record::Record.new(path)
+      Commands::SuccessResponse.new("Use #{path}")
     end
   end
 end
