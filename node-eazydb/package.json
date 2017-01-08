@@ -2,7 +2,7 @@
   "name": "node-eazydb",
   "version": "1.0.0",
   "description": "Node.js driver for EazyDB",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "DanSnow",
   "license": "MIT",
   "scripts": {
