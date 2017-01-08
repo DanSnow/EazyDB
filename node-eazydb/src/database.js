@@ -111,6 +111,13 @@ export class Database {
     })
   }
 
+  info () {
+    debug('Info')
+    return this._push({
+      command: 'info'
+    })
+  }
+
   close () {
     this._push({
       command: 'exit'
