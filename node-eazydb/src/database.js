@@ -100,6 +100,17 @@ export class Database {
     })
   }
 
+  update (id, value) {
+    debug('Update %s: %s', id, inspect(value))
+    return this._push({
+      command: 'update',
+      arg: {
+        id,
+        value
+      }
+    })
+  }
+
   close () {
     this._push({
       command: 'exit'
