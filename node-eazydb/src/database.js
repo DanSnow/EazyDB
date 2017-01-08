@@ -90,6 +90,16 @@ export class Database {
     })
   }
 
+  delete (id) {
+    debug('Delete: %s', id)
+    return this._push({
+      command: 'delete',
+      arg: {
+        id
+      }
+    })
+  }
+
   close () {
     this._push({
       command: 'exit'
