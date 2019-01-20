@@ -24,8 +24,9 @@ module EazyDB::Commands
     end
 
     private def initdb(path : String, schema_datas : JSON::Any)
-      schema = schema_datas.map do |schema_data|
-        name, type = schema_data.map(&.as_s)
+      schema = schema_datas.as_a.map do |schema_data|
+        name, type = schema_data.as_a.map(&.as_s)
+        p type
         case type
         when "str"
           {name: name, type: Type::T_STR}
