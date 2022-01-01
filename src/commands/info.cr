@@ -55,7 +55,7 @@ module EazyDB::Commands
   end
 
   class Info < Command
-    def execute(_arg : JSON::Any?)
+    def execute(_arg : JSON::Any?) : InfoResponse
       res = InfoResponse.new(db.header.next_id, db.header.bytesize)
 
       db.header.meta_cols.cols.each do |col|

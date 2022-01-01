@@ -13,7 +13,7 @@ module EazyDB::Commands
   end
 
   class Create < Command
-    def execute(args : JSON::Any?)
+    def execute(args : JSON::Any?): CreateResponse
       args = args.not_nil!
       path = args["path"].as_s
       dir = File.dirname(path)

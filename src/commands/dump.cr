@@ -36,7 +36,7 @@ module EazyDB::Commands
   end
 
   class Dump < Command
-    def execute(arg : JSON::Any?)
+    def execute(arg : JSON::Any?): DumpResponse
       res = DumpResponse.new
       db.dump do |header, rec_object|
         res[header.id] = rec_object

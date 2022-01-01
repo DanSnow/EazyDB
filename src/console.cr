@@ -30,9 +30,9 @@ module EazyDB
         if line.starts_with?("use")
           _, path = line.split(' ')
           @db_name = path
-          start = Time.now
+          start = Time.monotonic
           res = use(path)
-          e = Time.now
+          e = Time.monotonic
           report(res, e - start)
           next
         end
@@ -41,9 +41,9 @@ module EazyDB
           m = regex.match line
           if m
             cmd = klass.new(@db)
-            start = Time.now
+            start = Time.monotonic
             res = cmd.run(m["args"]?)
-            e = Time.now
+            e = Time.monotonic
             report(res, e - start)
             break :found
           end

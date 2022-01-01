@@ -25,7 +25,7 @@ module EazyDB::Commands
   end
 
   class Get < Command
-    def execute(arg : JSON::Any?)
+    def execute(arg : JSON::Any?): GetResponse | ErrorResponse
       arg = arg.not_nil!
       id = arg["id"].as_i.to_u32
       rec_object = db.get(id)

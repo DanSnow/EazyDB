@@ -1,6 +1,10 @@
-version: 1.0
+version: 2.0
 shards:
   commander:
-    github: mrrooijen/commander
+    git: https://github.com/mrrooijen/commander.git
     version: 0.3.3
+
+  readline:
+    git: https://github.com/crystal-lang/crystal-readline.git
+    version: 0.1.1
 

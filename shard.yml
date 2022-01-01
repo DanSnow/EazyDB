@@ -8,6 +8,8 @@ dependencies:
   commander:
     github: mrrooijen/commander
     version: ~> 0.3.3
+  readline:
+    github: crystal-lang/crystal-readline
 
 targets:
   eazydb:

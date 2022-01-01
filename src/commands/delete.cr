@@ -17,7 +17,7 @@ module EazyDB::Commands
   end
 
   class Delete < Command
-    def execute(arg : JSON::Any?)
+    def execute(arg : JSON::Any?): DeleteResponse
       arg = arg.not_nil!
       id = arg["id"].as_i.to_u32
       DeleteResponse.new(db.delete(id), id)
