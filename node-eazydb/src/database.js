@@ -1,6 +1,5 @@
 import { Readable } from 'stream'
 import { inspect } from 'util'
-import Promise from 'bluebird'
 import readline from 'readline'
 import execa from 'execa'
 import noop from 'lodash/noop'
@@ -12,10 +11,10 @@ const debug = _debug('database')
 const debugStream = _debugStream(debug)
 
 const defaultOptions = {
-  executePath: './eazydb'
+  executePath: './eazydb',
 }
 
-function defer () {
+function defer() {
   let res, rej
   const promise = new Promise((resolve, reject) => {
     res = resolve
@@ -24,12 +23,12 @@ function defer () {
   return {
     resolve: res,
     reject: rej,
-    promise: promise
+    promise: promise,
   }
 }
 
 export class Database {
-  constructor (options) {
+  constructor(options) {
     const stdin = new Readable()
     stdin._read = noop
     this._stdin = stdin
@@ -37,13 +36,13 @@ export class Database {
     this._pending = false
     this._options = Object.assign({}, defaultOptions, options)
     this._instance = execa(this._options.executePath, {
-      input: this._stdin.pipe(debugStream('stdin: %s'))
+      input: this._stdin.pipe(debugStream('stdin: %s')),
     })
   }
 
-  connect () {
+  connect() {
     this._stdout = readline.createInterface({
-      input: this._instance.stdout.pipe(debugStream('stdout: %s'))
+      input: this._instance.stdout.pipe(debugStream('stdout: %s')),
     })
     this._stdout.on('line', (line) => {
       debug('Get response: (%s)', line)
@@ -54,85 +53,85 @@ export class Database {
     return this
   }
 
-  use (database) {
+  use(database) {
     debug('Use %s', database)
     return this._push({
-      command: `use ${database}`
+      command: `use ${database}`,
     })
   }
 
-  create (path, schema) {
+  create(path, schema) {
     debug('Create %s', path)
     return this._push({
       command: 'create',
       arg: {
         path,
-        schema
-      }
+        schema,
+      },
     })
   }
 
-  get (id) {
+  get(id) {
     debug('Get %s', id)
     return this._push({
       command: 'get',
       arg: {
-        id
-      }
+        id,
+      },
     })
   }
 
-  insert (data) {
+  insert(data) {
     debug('Insert: %s', inspect(data))
     return this._push({
       command: 'insert',
-      arg: data
+      arg: data,
     })
   }
 
-  delete (id) {
+  delete(id) {
     debug('Delete: %s', id)
     return this._push({
       command: 'delete',
       arg: {
-        id
-      }
+        id,
+      },
     })
   }
 
-  update (id, value) {
+  update(id, value) {
     debug('Update %s: %s', id, inspect(value))
     return this._push({
       command: 'update',
       arg: {
         id,
-        value
-      }
+        value,
+      },
     })
   }
 
-  info () {
+  info() {
     debug('Info')
     return this._push({
-      command: 'info'
+      command: 'info',
     })
   }
 
-  dump () {
+  dump() {
     debug('Dump')
     return this._push({
-      command: 'dump'
+      command: 'dump',
     })
   }
 
-  close () {
+  close() {
     this._push({
-      command: 'exit'
+      command: 'exit',
     })
     return Promise.resolve()
   }
 
-  _push (data) {
+  _push(data) {
     debug(`Push: ${JSON.stringify(data)}`)
     const defered = defer()
     this._queue.push({ ...data, defered })
@@ -140,7 +139,7 @@ export class Database {
     return defered.promise
   }
 
-  _processQueue () {
+  _processQueue() {
     debug('Process queue')
     if (this._pending) {
       debug('Processing pending')
@@ -158,13 +157,13 @@ export class Database {
     }
   }
 
-  _send (command) {
+  _send(command) {
     debug(`Send: ${command}`)
     this._stdin.push(`${command}\n`)
     this._stdin.resume()
   }
 
-  _processResponse (response) {
+  _processResponse(response) {
     if (!this._pending) {
       throw Error('No pending command')
     }
@@ -174,7 +173,7 @@ export class Database {
     this._processQueue()
   }
 
-  static open (options = defaultOptions) {
+  static open(options = defaultOptions) {
     return new Promise((resolve) => {
       const database = new Database(options)
       resolve(database.connect())
